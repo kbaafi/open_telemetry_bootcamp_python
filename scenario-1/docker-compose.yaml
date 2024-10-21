@@ -1,0 +1,49 @@
+services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+  user_service:
+    build:
+      context: .
+      dockerfile: users_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8000
+    ports:
+      - 8000:8000
+    environment:
+      REMOTE_USERS_SVC_URI: http://remote_users_service:8001/get_users
+  remote_users_service:
+    build:
+      context: .
+      dockerfile: remote_users_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8001
+    ports:
+      - 8001:8001
+  items_service:
+    build:
+      context: .
+      dockerfile: items_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8002
+    ports:
+      - 8002:8002
+    environment:
+      DATA_URI: http://user_service:8000/user
+      WS_URI: ws://user_service:8000/ws
+      REDIS_URI: redis
+      REDIS_PORT: 6379
+  redis_subscriber:
+    build:
+      context: .
+      dockerfile: redis_subscriber_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8003
+    environment:
+      REDIS_URI: redis
+      REDIS_PORT: 6379
+    depends_on:
+    - redis
+networks:
+  otel_bootcamp:
