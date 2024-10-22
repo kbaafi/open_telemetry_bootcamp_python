@@ -23,6 +23,7 @@ RUN chmod +x boot.sh
 
 # Copy sources
 COPY src/items_service.py app.py
+COPY src/tracer.py tracer.py
 
 EXPOSE ${HTTP_LISTEN_PORT}
 ENTRYPOINT ["./boot.sh"]

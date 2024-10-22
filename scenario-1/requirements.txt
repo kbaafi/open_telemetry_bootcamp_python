@@ -1,8 +1,0 @@
-fastapi
-redis
-faker
-websockets
-requests
-opentelemetry-api
-opentelemetry-sdk
-uvicorn

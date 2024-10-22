@@ -3,6 +3,29 @@ services:
     image: redis
     ports:
       - 6379:6379
+  prometheus:
+    image: prom/prometheus
+    volumes: 
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports: 
+      - 9090:9090
+  jaeger:
+    image: jaegertracing/all-in-one
+    # environment:
+    #  - SPAN_STORAGE_TYPE=elasticsearch
+    #  - ES_SERVER_URLS=http://elastic:9200
+    ports: 
+      - 5775:5775
+      - 6831:6831
+      - 6832:6832
+      - 5778:5778
+      - 16686:16686
+      - 14268:14268
+      - 14250:14250
+      - 9411:9411
+    deploy:
+      restart_policy: # bad workaround, just to simplify the demo.
+        condition: on-failure
   user_service:
     build:
       context: .
@@ -11,8 +34,11 @@ services:
         HTTP_LISTEN_PORT: 8000
     ports:
       - 8000:8000
+      - 8090:9000
     environment:
       REMOTE_USERS_SVC_URI: http://remote_users_service:8001/get_users
+      METRICS_PORT: 9000
+      TRACES_ENDPOINT: http://jaeger:14268/api/traces?format=jaeger.thrift
   remote_users_service:
     build:
       context: .
@@ -29,11 +55,14 @@ services:
         HTTP_LISTEN_PORT: 8002
     ports:
       - 8002:8002
+      - 8091:9000
     environment:
       DATA_URI: http://user_service:8000/user
       WS_URI: ws://user_service:8000/ws
       REDIS_URI: redis
       REDIS_PORT: 6379
+      METRICS_PORT: 9000
+      TRACES_ENDPOINT: http://jaeger:14268/api/traces?format=jaeger.thrift
   redis_subscriber:
     build:
       context: .

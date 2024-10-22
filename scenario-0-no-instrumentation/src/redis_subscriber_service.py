@@ -25,7 +25,7 @@ def main():
             message = pubsub.get_message()
             if message and message['type'] == 'message':
                 message_handler(message)
-            time.sleep(0.02)
+            time.sleep(0.2)
     except KeyboardInterrupt:
         print ("Subscriber terminated")
 

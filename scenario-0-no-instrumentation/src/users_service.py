@@ -2,6 +2,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+from starlette.middleware.base import BaseHTTPMiddleware
 import requests
 import random
 from faker import Faker
@@ -12,6 +13,19 @@ import os
 app = FastAPI()
 fake = Faker()
 MAX_LEN = 100
+
+class RequestCounterMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, dispatch = None):
+        super().__init__(app, dispatch)
+        self._request_count = 0
+
+    async def dispatch(self, request, call_next):
+        self._request_count += 1
+        print(f"Request count: {self._request_count}")
+        response = await call_next(request)
+        return response
+    
+app.add_middleware(RequestCounterMiddleware)
 
 REMOTE_USERS_API_URL = os.getenv("REMOTE_USERS_SVC_URI", None)
 tracer = trace.get_tracer(__name__)
