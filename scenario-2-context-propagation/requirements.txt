@@ -1,0 +1,14 @@
+fastapi
+redis
+faker
+websockets
+requests
+opentelemetry-api
+opentelemetry-sdk
+prometheus-client
+opentelemetry-exporter-prometheus
+opentelemetry-exporter-jaeger-thrift
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-redis
+uvicorn
