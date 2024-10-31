@@ -1,0 +1,91 @@
+services:
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+  prometheus:
+    image: prom/prometheus
+    volumes: 
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports: 
+      - 9090:9090
+  jaeger:
+    image: jaegertracing/all-in-one
+    # environment:
+    #  - SPAN_STORAGE_TYPE=elasticsearch
+    #  - ES_SERVER_URLS=http://elastic:9200
+    ports: 
+      - 5775:5775
+      - 6831:6831
+      - 6832:6832
+      - 5778:5778
+      - 16686:16686  # Dashboard UI
+      - 14268:14268  # Jaeger Http endpoint
+      - 14250:14250  # Jaeger Grpc endpoint
+      - 9411:9411
+    deploy:
+      restart_policy: # bad workaround, just to simplify the demo.
+        condition: on-failure
+  collector_gateway:
+    image: otel/opentelemetry-collector-contrib
+    volumes: 
+      - ./config/collector-gateway.yml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "1888:1888"     # pprof extension
+      - "8888:8888"     # Prometheus metrics exposed by the collector
+      - "8889:8889"     # Prometheus exporter metrics
+      - "13133:13133"   # health_check extension
+      - "4318:4318"     # OTLP HTTP receiver
+      - "55670:55679"   # zpages extension
+  user_service:
+    build:
+      context: .
+      dockerfile: users_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8000
+    ports:
+      - 8000:8000
+      # - 8090:9000 Remove Prometheus metrics scrape endpoint
+      # - Metrics will be routed through Otel Collector
+    environment:
+      REMOTE_USERS_SVC_URI: http://remote_users_service:8001/get_users
+      SIGNALS_ENDPOINT: http://collector_gateway:4318
+  remote_users_service:
+    build:
+      context: .
+      dockerfile: remote_users_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8001
+    ports:
+      - 8001:8001
+  items_service:
+    build:
+      context: .
+      dockerfile: items_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8002
+    ports:
+      - 8002:8002
+      # - 8091:9000 Remove Prometheus metrics scrape endpoint
+      # - Metrics will be routed through Otel Collector
+    environment:
+      DATA_URI: http://user_service:8000/user
+      WS_URI: ws://user_service:8000/ws
+      REDIS_URI: redis
+      REDIS_PORT: 6379
+      SIGNALS_ENDPOINT: http://collector_gateway:4318
+  redis_subscriber:
+    build:
+      context: .
+      dockerfile: redis_subscriber_service.Dockerfile
+      args:
+        HTTP_LISTEN_PORT: 8003
+    environment:
+      REDIS_URI: redis
+      REDIS_PORT: 6379
+      SIGNALS_ENDPOINT: http://collector_gateway:4318
+    depends_on:
+    - redis
+networks:
+  otel_bootcamp:
