@@ -1,7 +1,9 @@
 import json
 import os
-from opentelemetry.propagate import extract
+import opentelemetry
+import opentelemetry.propagate
 from tracer import init_tracer
+from opentelemetry.instrumentation.redis import RedisInstrumentor
 
 import redis
 
@@ -22,6 +24,7 @@ meter, tracer = init_tracer(
 print("Initiating connection to Redis")
 client = redis.Redis(host=REDIS_URI, port=REDIS_PORT)
 print("Connection to Redis established")
+RedisInstrumentor().instrument()
 
 
 def message_handler(message):
@@ -29,8 +32,7 @@ def message_handler(message):
     channel = message['channel'].decode(DECODE_UTF8)
     
     payload = json.loads(message_data)
-
-    propagated_context = extract(carrier=payload)
+    propagated_context = opentelemetry.propagate.extract(carrier=payload)
 
     with tracer.start_as_current_span("redis_message_consume", context=propagated_context, attributes=payload):
         print(f"Received {message} from {channel}")
