@@ -1,3 +1,4 @@
+from __future__ import annotations 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -13,6 +14,23 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 from tracer import init_tracer
 
+
+WS_URI = os.getenv("WS_URI", None) # "ws://localhost:8000/ws"
+DATA_URI = os.getenv("DATA_URI", None) # "http://localhost:8000/user"
+REDIS_URI = os.getenv("REDIS_URI", "redis")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+METRICS_PORT = int(os.getenv("METRICS_PORT", 9000))
+TRACES_ENDPOINT = os.getenv("TRACES_ENDPOINT")
+
+meter, tracer = init_tracer(
+    service_name="items_service",
+    metrics_port=METRICS_PORT,
+    traces_endpoint=TRACES_ENDPOINT
+)
+
+counter = meter.create_counter("http_requests_total")
+
+redis_client = Redis(host=REDIS_URI, port=REDIS_PORT)
 class RequestCounterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, dispatch = None):
         super().__init__(app, dispatch)
@@ -28,22 +46,7 @@ class RequestCounterMiddleware(BaseHTTPMiddleware):
 app = FastAPI()
 app.add_middleware(RequestCounterMiddleware)
 FastAPIInstrumentor.instrument_app(app)
-
-WS_URI = os.getenv("WS_URI", None) # "ws://localhost:8000/ws"
-DATA_URI = os.getenv("DATA_URI", None) # "http://localhost:8000/user"
-REDIS_URI = os.getenv("REDIS_URI", "redis")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-METRICS_PORT = int(os.getenv("METRICS_PORT", 9000))
-TRACES_ENDPOINT = os.getenv("TRACES_ENDPOINT")
-
-
-meter, tracer = init_tracer(
-    service_name="items_service",
-    metrics_port=METRICS_PORT,
-    traces_endpoint=TRACES_ENDPOINT
-)
-
-redis_client = Redis(host=REDIS_URI, port=REDIS_PORT)
+RequestsInstrumentor().instrument()
 
 @app.get("/ws")
 async def say_hi_web_socket():

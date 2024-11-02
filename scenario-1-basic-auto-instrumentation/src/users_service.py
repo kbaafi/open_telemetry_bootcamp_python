@@ -56,7 +56,6 @@ async def get_user():
             name="A number was randomized",
             attributes={"randomIndex": random_index}
         )
-        print(f"TraceId: {active_span.get_span_context().trace_id}")
     return JSONResponse(content=data[random_index])
 
 

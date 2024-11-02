@@ -36,10 +36,3 @@ def init_tracer (service_name: str, metrics_port: int, traces_endpoint:str):
 
 
     return metrics.get_meter(service_name), trace.get_tracer(service_name)
-
-
-
-
-
-
-
