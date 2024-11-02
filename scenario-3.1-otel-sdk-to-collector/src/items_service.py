@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.propagate import inject
 from redis import Redis
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -39,7 +40,6 @@ class RequestCounterMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request, call_next):
         self._request_count += 1
-        print(f"Request count: {self._request_count}")
         counter.add(1, {"service": "items_service"})
         request.state.request_id = self._request_count
         response = await call_next(request)
@@ -50,6 +50,7 @@ app = FastAPI()
 app.add_middleware(RequestCounterMiddleware)
 FastAPIInstrumentor.instrument_app(app)
 RedisInstrumentor().instrument()
+RequestsInstrumentor().instrument()
 redis_client = Redis(host=REDIS_URI, port=REDIS_PORT)
 
 
