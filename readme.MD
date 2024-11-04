@@ -1,13 +1,13 @@
 # Open Telemetry Bootcamp Python
----
-This is my follow-along in Python of the [OpenTelemetry Bootcamp by Michael Haberman](https://www.youtube.com/watch?v=UEwkn0iHDzA&list=PLNxnp_rzlqf6z1cC0IkIwp6yjsBboX945). The original work was done in TypeScript and can be found at [https://github.com/aspecto-io/opentelemetry-bootcamp/](https://github.com/aspecto-io/opentelemetry-bootcamp/)
+
+This is my follow-along (in Python) of the [OpenTelemetry Bootcamp by Michael Haberman](https://www.youtube.com/watch?v=UEwkn0iHDzA&list=PLNxnp_rzlqf6z1cC0IkIwp6yjsBboX945). The original work was done in TypeScript and can be found at [https://github.com/aspecto-io/opentelemetry-bootcamp/](https://github.com/aspecto-io/opentelemetry-bootcamp/)
 
 This work follows the instrumentation of a set of microservices by implementing the following scenarios:
 1. Basic and Auto Instrumentation of Web Services
 2. Context Propagation (transfer of tracing contexts between different runtimes)
 3. Implementation of the OpenCollector Agent and Gateway
 4. (Not yet implemented) Sampling Strategies
-5. (Not yet implemented) Custom Instrumentation
+5. Custom Instrumentation
 
 The scenarios are implemented in Docker Compose for easy verification. 
 
