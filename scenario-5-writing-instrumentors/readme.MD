@@ -6,7 +6,7 @@ Inserting tracing and metering logic into one's code can make the codebase unwei
 2. For common usecases, there can be a baseline Instrumentor for a particular library
 3. Custom observability code is limited and only developed when more sophisticated application insights are needed.
 
-In this scenario we instrument the `send` and `recv` functions of Python's `websockets` module.
+In this scenario we instrument the `send` and `recv` functions of Python's `websockets` module. See [./src/web_sockets_instrumentor.py](./src/websockets_instrumentor.py)
 
 We use the decorators `observe_send` and `observe_recv` to patch the send and recv member variables of the `websockets.WebSocketCommonProtocol.send` and `websockets.WebSocketCommonProtocol.recv` functions.
 
