@@ -6,7 +6,7 @@ This work follows the instrumentation of a set of microservices by implementing 
 1. Basic and Auto Instrumentation of Web Services
 2. Context Propagation (transfer of tracing contexts between different runtimes)
 3. Implementation of the OpenCollector Agent and Gateway
-4. (Not yet implemented) Sampling Strategies
+4. Sampling Strategies
 5. Custom Instrumentation
 
 The scenarios are implemented in Docker Compose for easy verification. 
